@@ -10,13 +10,18 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 
-app.use(cors(
-    {
-        origin: { "https://deploy-mern-1whq.vercel.app"},
-        methods: [ "POST", "GET"],
-        credentials: true
-    }
-));
+app.use(cors({
+    origin: "https://deploy-mern-1whq.vercel.app", // Set the origin as a string, not an object
+    methods: ["POST", "GET"],
+    credentials: true
+}));
+app.use(bodyParser.json()); 
+
+
+app.get("/", (req, res) => {
+    res.send("Server");
+})
+
 
 const decodeToken = (token) => {
     try {
@@ -28,9 +33,6 @@ const decodeToken = (token) => {
   }
 };
 
-app.get("/", (req, res) => {
-    res.send("Server");
-})
 
 const API_KEY = 'cc28fc43';
 const BASE_URL = 'http://www.omdbapi.com/';
