@@ -10,19 +10,14 @@ const PORT = 5000;
 
 
 // Configure CORS
-// app.use(cors({
-//   origin: ["https://movie-recommend-frontend.vercel.app"],
-//   methods: ['GET', 'POST'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }));
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://movie-recommend-frontend.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+app.use(cors({
+  origin: ["https://movie-recommend-frontend.vercel.app"],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-app.use(bodyParser.json());
+
+// app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
     res.send("Server");
