@@ -10,12 +10,23 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 
+const cors = require('cors');
+
+// Allow multiple origins by setting a function for the origin property
+const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
+
 app.use(cors({
-    origin: "https://deploy-mern-1whq.vercel.app", // Set the origin as a string, not an object
+    origin: function (origin, callback) {
+        // Check if the incoming origin is in the allowed origins array
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ["POST", "GET"],
     credentials: true
 }));
-app.use(bodyParser.json()); 
 
 
 app.get("/", (req, res) => {
