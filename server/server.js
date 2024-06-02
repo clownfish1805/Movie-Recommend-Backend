@@ -8,23 +8,14 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 
-const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
+//const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
 
 // Configure CORS
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, postman)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    methods: ["POST", "GET"],
-    credentials: true
+  origin: 'https://movie-recommend-frontend.vercel.app',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
