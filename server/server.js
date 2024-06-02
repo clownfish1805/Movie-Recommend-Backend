@@ -5,6 +5,13 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Server is running'
+    });
+});
+
 
 const decodeToken = (token) => {
     try {
