@@ -10,14 +10,16 @@ const PORT = 5000;
 
 const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
 
+// Configure CORS
 app.use(cors({
     origin: function (origin, callback) {
-        // Check if the incoming origin is in the allowed origins array
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+        // Allow requests with no origin (like mobile apps, curl, postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+            return callback(new Error(msg), false);
         }
+        return callback(null, true);
     },
     methods: ["POST", "GET"],
     credentials: true
@@ -52,8 +54,7 @@ if (!MONGO_URI) {
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() =>
-  console.log('MongoDB connected...'))
+}).then(() => console.log('MongoDB connected...'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 const userSchema = new mongoose.Schema({
