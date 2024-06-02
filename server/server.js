@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
 
-
 const decodeToken = (token) => {
     try {
         //jwt.decode(token);
@@ -102,8 +101,6 @@ app.post('/api/signin', async (req, res) => {
         console.log(token);
         res.json({ token });
         
-
-
     } catch (error) {
         console.error('Error signing in:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -136,19 +133,28 @@ app.post('/api/signup', async (req, res) => {
 });
 
 
+
 //Add to favorite
 app.post('/api/favorite', async (req, res) => {
     console.log(req.body);
     const token = req.headers.authorization;
     try {
         const varToken = decodeToken(token);
+
         const email = varToken['email']; 
+
         const movie = JSON.stringify(req.body);
+
         console.log(movie);
+
         const newFav = new Fav({ email, movie });
+
         newFav.save();
+
         console.log("Data saved");
+
         res.status(200).json(movie);
+
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error.message });
@@ -161,6 +167,7 @@ app.get('/api/favorite', async (req, res) => {
     const token = req.headers.authorization;
     try {
         const varToken = decodeToken(token);
+
         const email = varToken['email']; 
         
         const fav = await Fav.find({ email: email });
@@ -215,6 +222,7 @@ app.get('/api/search', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
