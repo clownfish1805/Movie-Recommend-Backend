@@ -8,11 +8,10 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 
-//const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
 
 // Configure CORS
 app.use(cors({
-  origin: ["https://movie-recommend-frontend.vercel.app/"],
+  origin: ["https://movie-recommend-frontend.vercel.app"],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
