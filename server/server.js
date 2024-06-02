@@ -5,13 +5,18 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
-app.get('/api/health', (req, res) => {
-    res.status(200).json({
-        status: 'OK',
-        message: 'Server is running'
-    });
-});
 
+
+const app = express();
+const PORT = 5000;
+
+app.use(cors(
+    {
+        origin: { "https://deploy-mern-1whq.vercel.app"},
+        methods: [ "POST", "GET"],
+        credentials: true
+    }
+));
 
 const decodeToken = (token) => {
     try {
@@ -23,8 +28,9 @@ const decodeToken = (token) => {
   }
 };
 
-const app = express();
-const PORT = 5000;
+app.get("/", (req, res) => {
+    res.send("Server");
+})
 
 const API_KEY = 'cc28fc43';
 const BASE_URL = 'http://www.omdbapi.com/';
