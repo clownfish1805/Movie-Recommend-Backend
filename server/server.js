@@ -12,7 +12,7 @@ const PORT = 5000;
 
 // Configure CORS
 app.use(cors({
-  origin: 'https://movie-recommend-frontend.vercel.app',
+  origin: '',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
