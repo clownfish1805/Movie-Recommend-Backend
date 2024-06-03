@@ -8,18 +8,18 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = 5000;
 
-//const allowedOrigins = ['https://deploy-mern-1whq.vercel.app', 'https://movie-recommend-frontend.vercel.app'];
-
-// Configure CORS
-app.use(cors({
-  origin: '',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-    res.send("Server");
+// Middleware for handling CORS and preflight requests
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Expose-Headers", "Auth-Token, Content-Length");
+    
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    
+    next();
 });
 
 const decodeToken = (token) => {
@@ -31,10 +31,12 @@ const decodeToken = (token) => {
     }
 };
 
+
+
 const API_KEY = 'cc28fc43';
 const BASE_URL = 'http://www.omdbapi.com/';
 
-const MONGO_URI = 'mongodb+srv://akksharass:dbUserPassword@cluster0.z3qrcab.mongodb.net/mydatabase?retryWrites=true';
+const MONGO_URI ='mongodb+srv://akksharass:dbUserPassword@cluster0.z3qrcab.mongodb.net/mydatabase?retryWrites=true';
 console.log('Mongo URI: ', MONGO_URI);
 
 if (!MONGO_URI) {
@@ -46,8 +48,14 @@ mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('MongoDB connected...'))
-  .catch(err => console.error('MongoDB connection error:', err));
+    .catch(err => console.error('MongoDB connection error:', err));
+  
+// Enable CORS and parse json body
+app.use(cors());
+app.use(express.json());
 
+
+//defining schema
 const userSchema = new mongoose.Schema({
     username: String,
     email: String,
@@ -59,17 +67,42 @@ const favSchema = new mongoose.Schema({
     movie: String
 });
 
+//model creation
 const User = mongoose.model('users', userSchema);
 const Fav = mongoose.model('favs', favSchema);
+
+
+// const authenticateToken = (req, res, next) => {
+//     const authHeader = req.headers['authorization'];
+//     const token = authHeader && authHeader.split(' ')[1];
+//     if (!token) return res.sendStatus(401);
+
+//     jwt.verify(token, 'secret_key', (err, user) => {
+//         if (err) return res.sendStatus(403);
+//         req.user = user;
+//         next();
+//     });
+// };
+
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401);
+
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
 
     jwt.verify(token, 'secret_key', (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) {
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ error: 'Token expired' });
+            } else {
+                return res.status(403).json({ error: 'Invalid token' });
+            }
+        }
         req.user = user;
+        console.log('Authenticated user:', req.user); // Add logging
         next();
     });
 };
@@ -100,6 +133,8 @@ app.post('/api/signin', async (req, res) => {
     }
 });
 
+
+
 // Sign-up route
 app.post('/api/signup', async (req, res) => {
     const { username, email, password } = req.body;
@@ -120,49 +155,85 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
+
+
 // Add to favorite
+// app.post('/api/favorite', authenticateToken, async (req, res) => {
+//     console.log(req.body);
+//     const token = req.headers.authorization;
+//     try {
+//         const varToken = decodeToken(token);
+
+//         const email = varToken['email'];
+//         const movie = JSON.stringify(req.body);
+
+//         console.log(movie);
+
+//         const newFav = new Fav({ email, movie });
+
+//         await newFav.save();
+
+//         console.log("Data saved");
+
+//         res.status(200).json(movie);
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
+
+
+
 app.post('/api/favorite', authenticateToken, async (req, res) => {
     console.log(req.body);
-    const token = req.headers.authorization;
     try {
-        const varToken = decodeToken(token);
-
-        const email = varToken['email']; 
+        const email = req.user.email;
         const movie = JSON.stringify(req.body);
 
-        console.log(movie);
-
         const newFav = new Fav({ email, movie });
-
         await newFav.save();
 
         console.log("Data saved");
-
         res.status(200).json(movie);
     } catch (error) {
-        console.log(error);
+        console.error('Error adding favorite:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
+
+// Get favorite
+// app.get('/api/favorite', authenticateToken, async (req, res) => {
+//     const token = req.headers.authorization;
+//     try {
+//         const varToken = decodeToken(token);
+
+//         const email = varToken['email'];
+        
+//         const fav = await Fav.find({ email: email });
+
+//         console.log("Data saved");
+//         res.json(favorites);
+//       //  res.status(200).json(fav);
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
+
 
 // Get favorite
 app.get('/api/favorite', authenticateToken, async (req, res) => {
-    const token = req.headers.authorization;
     try {
-        const varToken = decodeToken(token);
-
-        const email = varToken['email']; 
-        
+        const email = req.user.email;
         const fav = await Fav.find({ email: email });
-
-        console.log("Data saved");
-
-        res.status(200).json(fav);
+        res.json(fav);
     } catch (error) {
-        console.log(error);
+        console.error('Error getting favorite:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Movie Search Route
 app.get('/api/search', authenticateToken, async (req, res) => {
@@ -171,8 +242,7 @@ app.get('/api/search', authenticateToken, async (req, res) => {
     try {
         decodeToken(token);
         console.log(decodeToken(token));
-        if (title == null) {
-            const response = await axios.get(BASE_URL, {
+        const response = await axios.get(BASE_URL, {
                 params: {
                     apikey: API_KEY,
                     s: name
@@ -184,20 +254,6 @@ app.get('/api/search', authenticateToken, async (req, res) => {
             } else {
                 throw new Error(response.data.Error);
             }
-        } else {
-            const completeResponse = await axios.get(BASE_URL, {
-                params: {
-                    apikey: API_KEY,
-                    t: name
-                }
-            });
-            console.log(completeResponse.data);
-            if (completeResponse.data.Response === 'True') {
-                res.json(completeResponse.data);
-            } else {
-                throw new Error(completeResponse.data.Error);
-            }
-        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
