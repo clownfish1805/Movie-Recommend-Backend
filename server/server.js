@@ -20,6 +20,19 @@ app.use(function(req, res, next) {
     }
     
     next();
+
+// Configure CORS
+app.use(cors({
+  origin: ["https://movie-recommend-frontend.vercel.app"],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+
+// app.use(bodyParser.json());
+
+app.get("/", (req, res) => {
+    res.send("Server");
 });
 
 const decodeToken = (token) => {
